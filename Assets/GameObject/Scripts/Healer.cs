@@ -99,7 +99,7 @@ public class Healer : Unit
 
     public void FindNewTarget()
     {
-        if (currentState != HealerUnitState.Idle & currentState != HealerUnitState.Moving)
+        if (currentState == HealerUnitState.Healing)
             return;
 
         if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy || Vector2.Distance(transform.position, currentTarget.transform.position) > range)

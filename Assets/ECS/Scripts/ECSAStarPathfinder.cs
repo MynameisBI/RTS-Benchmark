@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine;
 
 public struct Node
 {
@@ -23,11 +24,12 @@ public struct ECSAStarPathfinder
     public int2 goal;
     public int2 gridSize;
 
-    [ReadOnly] public DynamicBuffer<OccupationCell> occupationCells; // Buffer to store the occupation cells
+    [ReadOnly] public DynamicBuffer<OccupationCellBuffer> occupationCells; // Buffer to store the occupation cells
 
-    public DynamicBuffer<GridFollowerPathNode> pathBuffer; // Buffer to store the path
+    public DynamicBuffer<UnitPathBuffer> pathBuffer; // Buffer to store the path
 
-    public void Execute()
+    [BurstCompile]
+    public bool Execute()
     {
         NativeList<int2> openList = new NativeList<int2>(Allocator.Temp);
         NativeHashSet<int2> closedSet = new NativeHashSet<int2>(100, Allocator.Temp);
@@ -67,7 +69,7 @@ public struct ECSAStarPathfinder
             if (current.Equals(goal))
             {
                 ReconstructPath(cameFrom, current);
-                return;
+                return true;
             }
 
             closedSet.Add(current);
@@ -109,6 +111,8 @@ public struct ECSAStarPathfinder
         openList.Dispose();
         closedSet.Dispose();
         cameFrom.Dispose();
+
+        return false;
     }
 
     void ReconstructPath(NativeParallelHashMap<int2, Node> cameFrom, int2 current)
@@ -123,19 +127,17 @@ public struct ECSAStarPathfinder
 
         // Reverse
         for (int i = tempPath.Length - 1; i >= 0; i--)
-            pathBuffer.Add(new GridFollowerPathNode
+            pathBuffer.Add(new UnitPathBuffer
             {
-                x = tempPath[i].x,
-                y = tempPath[i].y,
+                position = new int2(tempPath[i].x, tempPath[i].y)
             });
     }
 
-    float Heuristic(int2 a, int2 b) => math.abs(a.x - b.x) + math.abs(a.y - b.y); // Manhattan
+    float Heuristic(int2 a, int2 b) => math.abs(a.x - b.x) + math.abs(a.y - b.y);
 
     bool IsInBounds(int2 pos) =>
         pos.x >= 0 && pos.x < gridSize.x &&
         pos.y >= 0 && pos.y < gridSize.y;
 
-    bool IsWalkable(int2 pos) =>
-        occupationCells[pos.x + pos.y * gridSize.x].isOccupied == 0;
+    bool IsWalkable(int2 pos) => !occupationCells[pos.x + pos.y * gridSize.x].isOccupied;
 }

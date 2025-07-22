@@ -151,10 +151,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e910f9adaa6a1ce4a87e4f858abd1fb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 100
-  height: 100
-  unitCount: 850
+  width: 50
+  height: 50
+  unitCount: 3
   unitPrefab: {fileID: 1838401933740867757, guid: 9b518d75e9ac84b4488aac8205cf8145, type: 3}
+  wandererPrefab: {fileID: 2365146204692483543, guid: 089ec834abce752429509a35ac17a8f9, type: 3}
+  lightPrefab: {fileID: 2365146204692483543, guid: 7172900d6b50f8444bce2a9a795957ae, type: 3}
+  heavyPrefab: {fileID: 2365146204692483543, guid: 82a8e005a1459e14cbd2aabc51660b75, type: 3}
+  rangePrefab: {fileID: 2365146204692483543, guid: 207865fe42e47454a8b44aceedc66aa9, type: 3}
+  healerPrefab: {fileID: 2365146204692483543, guid: 9d4b7cb58c14b0f42a68fa13a3904df4, type: 3}
+  trapperPrefab: {fileID: 2365146204692483543, guid: c7be49b99752a0f4a8f71b5e402d5bc9, type: 3}
+  workerPrefab: {fileID: 2365146204692483543, guid: f20a51f8a1d974b4ab9b89e1b7ca5eac, type: 3}
   obstaclePrefab: {fileID: 1393334593569357761, guid: bef2b6c4035c8374fbb19e42285a7f86, type: 3}
   trapPrefab: {fileID: 1838401933740867757, guid: fa395a81b3981254488a13cc3aa66153, type: 3}
 --- !u!4 &676041011

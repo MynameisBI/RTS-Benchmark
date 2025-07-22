@@ -79,8 +79,8 @@ public class Fighter : Unit
                     }
                 }
 
-                while (currentPath.Count == 0 && currentTarget == null)
-                    Move(Random.Range(0, gameManager.width), Random.Range(0, gameManager.height));
+                //while (currentPath.Count == 0 && currentTarget == null)
+                //    Move(Random.Range(0, gameManager.width), Random.Range(0, gameManager.height));
 
                 break;
 
@@ -94,6 +94,7 @@ public class Fighter : Unit
                 if (secondsToAttack < 0)
                 { 
                     secondsToAttack = secondsPerAttack;
+                    // Side effect moment
                     Attack(currentTarget);
 
                     if (Vector2.Distance(new Vector2(gridX, gridY), (Vector2)currentTarget.transform.position) > range || currentTarget == null || currentTarget.IsDestroyed())
@@ -110,16 +111,6 @@ public class Fighter : Unit
     {
         if (currentState == FighterUnitState.Attacking)
             return;
-        //if (currentState == FighterUnitState.Moving)
-        //{
-        //    if (currentPath.Count > 0 && (currentTarget != null || !currentTarget.IsDestroyed()))
-        //    {
-        //        Debug.Log("Can't find new target since " + currentTarget.gameObject.name + "is still available");
-        //        return;
-        //    }
-        //}
-
-        //Debug.Log("Finding new target for " + gameObject.name);
 
         if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy || Vector2.Distance(transform.position, currentTarget.transform.position) > range)
         {

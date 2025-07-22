@@ -3,7 +3,17 @@ guid: e910f9adaa6a1ce4a87e4f858abd1fb1
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - unitPrefab: {instanceID: 0}
+  - wandererPrefab: {fileID: 2365146204692483543, guid: 089ec834abce752429509a35ac17a8f9, type: 3}
+  - lightPrefab: {fileID: 2365146204692483543, guid: 7172900d6b50f8444bce2a9a795957ae, type: 3}
+  - heavyPrefab: {instanceID: 0}
+  - rangePrefab: {instanceID: 0}
+  - healerPrefab: {instanceID: 0}
+  - trapperPrefab: {instanceID: 0}
+  - workerPrefab: {instanceID: 0}
+  - obstaclePrefab: {instanceID: 0}
+  - trapPrefab: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

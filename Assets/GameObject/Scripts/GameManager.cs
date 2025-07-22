@@ -45,8 +45,10 @@ public class GameManager : MonoBehaviour
         if (!initialized)
         {
 
-            for (int i = 0; i < 1; i++)
-                AddUnit(3, Random.Range(0, width), Random.Range(0, height), 1);
+            for (int team = 1; team <= 2; team ++)
+                for (int i = 0; i < 1; i++)
+                    AddUnit(1, Random.Range(0, width), Random.Range(0, height), team);
+
             //for (int i = 0; i < 20; i++)
             //    AddUnit(-1, Random.Range(0, width), Random.Range(0, height), 1);
             //for (int i = 0; i < 20; i++)
