@@ -83,7 +83,6 @@ public class Trapper : Unit
                         {
                             if (gridX == trap.gridX && gridY == trap.gridY && team != trap.team)
                             {
-
                                 trap.OnHit(this);
                                 break;
                             }

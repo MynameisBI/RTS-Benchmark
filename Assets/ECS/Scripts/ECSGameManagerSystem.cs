@@ -34,11 +34,7 @@ public partial struct ECSGameManagerSystem : ISystem
 
                     x = UnityEngine.Random.Range(0, gameManager.width);
                     y = UnityEngine.Random.Range(0, gameManager.height);
-                    AddUnit(ref state, 2, team, x, y);
-
-                    x = UnityEngine.Random.Range(0, gameManager.width);
-                    y = UnityEngine.Random.Range(0, gameManager.height);
-                    AddUnit(ref state, 4, team, x, y);
+                    AddUnit(ref state, 5, team, x, y);
 
                     //x = UnityEngine.Random.Range(0, gameManager.width);
                     //y = UnityEngine.Random.Range(0, gameManager.height);
@@ -209,7 +205,7 @@ public partial struct ECSGameManagerSystem : ISystem
                     currentState = FighterComponent.FighterState.Idle,
                     target = Entity.Null,
                     secondsToFindNewTarget = 0f,
-                    secondsPerFindNewTarget = UnityEngine.Random.Range(0.75f, 1.25f),
+                    secondsPerFindNewTarget = UnityEngine.Random.Range(1.15f, 1.5f),
                 });
                 break;
 				
@@ -297,7 +293,7 @@ public partial struct ECSGameManagerSystem : ISystem
                 state.EntityManager.AddComponentData<UnitComponent>(unit, new UnitComponent
                 {
                     speed = 5f,
-                    range = 6, damage = 1,
+                    range = 1, damage = 1,
                     attackSpeed = 1f, secondsToAttack = 0f,
                     targetPosition = null, hasTriedFindPath = true,
                 });
@@ -308,10 +304,9 @@ public partial struct ECSGameManagerSystem : ISystem
                     health = 5, maxHealth = 5,
                 });
                 HealthBarReference.CreateHealthBar(unit, 5);
-                state.EntityManager.AddComponentData<FighterComponent>(unit, new FighterComponent
+                state.EntityManager.AddComponentData<TrapperComponent>(unit, new TrapperComponent
                 {
-                    currentState = FighterComponent.FighterState.Idle,
-                    target = Entity.Null,
+                    currentState = TrapperComponent.TrapperState.Idle,
                     secondsToFindNewTarget = 0f,
                     secondsPerFindNewTarget = UnityEngine.Random.Range(0.75f, 1.25f),
                 });

@@ -17,6 +17,8 @@ public struct UnitComponent : IComponentData
     public int2? targetPosition;
     public bool hasTriedFindPath;
     public bool hasRerenderedPath;
+
+    public int2 lastFrameGridPosition;
 }
 
 public struct UnitPathBuffer : IBufferElementData

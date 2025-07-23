@@ -25,9 +25,9 @@ public partial struct UnitSystem : ISystem
         ECSGameManager gameManager = SystemAPI.GetSingleton<ECSGameManager>();
         Entity gameManagerEntity = SystemAPI.GetSingletonEntity<ECSGameManager>();
 
-        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, transform, entity) in
+        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, teamComponent, transform, entity) in
                 SystemAPI.Query<RefRW<GridPositionComponent>, RefRW<UnitComponent>,
-                DynamicBuffer<UnitPathBuffer>, RefRW<LocalTransform>>().WithEntityAccess())
+                DynamicBuffer<UnitPathBuffer>, RefRO<TeamComponent>, RefRW<LocalTransform>>().WithEntityAccess())
         {
             unitComponent.ValueRW.secondsToAttack -= SystemAPI.Time.DeltaTime;
 
@@ -48,55 +48,27 @@ public partial struct UnitSystem : ISystem
                 unitComponent.ValueRW.hasTriedFindPath = true;
             }
 
-            /*
-            if (unitPathBuffer.Length > 0)
+            if (!unitComponent.ValueRO.lastFrameGridPosition.Equals(gridPositionComponent.ValueRO.position))
             {
-                float2 currentPosition = new float2(transform.ValueRW.Position.x, transform.ValueRW.Position.y);
-                float2 actualPosition = MoveTowards(currentPosition, unitPathBuffer[0].position,
-                        unitComponent.ValueRO.speed * SystemAPI.Time.DeltaTime);
-                transform.ValueRW.Position = new float3(actualPosition.x, actualPosition.y, 0);
-
-                if (math.distance(actualPosition, unitPathBuffer[0].position) < 0.1f)
+                foreach (var (trapGridPositionComponent, trapComponent, trapTeamComponent, trapEntity) in
+                        SystemAPI.Query<RefRO<GridPositionComponent>, RefRW<TrapComponent>, RefRO<TeamComponent>>().WithEntityAccess())
                 {
-                    if (GeneralUtils.IsWalkable(unitPathBuffer[0].position, gameManager, SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity)))
+                    if (teamComponent.ValueRO.teamId != trapTeamComponent.ValueRO.teamId &&
+                        gridPositionComponent.ValueRW.position.Equals(trapGridPositionComponent.ValueRO.position))
                     {
-                        gridPositionComponent.ValueRW.position = unitPathBuffer[0].position;
+                        Debug.Log($"Unit {entity.Index} stepped on a trap at position {trapGridPositionComponent.ValueRO.position}");
 
-                        // Check for traps
-                        //foreach (var (trapGridObject, trap, entity) in SystemAPI.Query<RefRO<GridEntity>, RefRW<ECSTrap>>().WithEntityAccess())
-                        //{
-                        //    if (gridPositionComponent.ValueRW.position == new int2(trapGridObject.ValueRO.x, trapGridObject.ValueRO.y))
-                        //    {
-                        //        if (trap.ValueRW.counter <= 0)
-                        //            continue;
+                        if (trapComponent.ValueRO.counter <= 0)
+                            continue;
 
-                        //        if (--trap.ValueRW.counter <= 0)
-                        //        {
-                        //            ecb.DestroyEntity(entity);
-                        //        }
-                        //        break;
-                        //    }
-                        //}
+                        if (--trapComponent.ValueRW.counter <= 0)
+                            ecb.DestroyEntity(trapEntity);
 
-                        unitPathBuffer.RemoveAt(0);
-                    } else
-                    {
-                        transform.ValueRW.Position =
-                                new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
-                        unitPathBuffer.Clear();
-                        var job = new ECSAStarPathfinder
-                        {
-                            start = gridPositionComponent.ValueRW.position,
-                            goal = (int2)unitComponent.ValueRO.targetPosition,
-                            gridSize = new int2(gameManager.width, gameManager.height),
-                            occupationCells = SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity),
-                            pathBuffer = unitPathBuffer,
-                        };
-                        job.Execute();
+                        break;
                     }
                 }
             }
-            */
+            unitComponent.ValueRW.lastFrameGridPosition = gridPositionComponent.ValueRO.position;
         }
 
         ecb.Playback(state.EntityManager);

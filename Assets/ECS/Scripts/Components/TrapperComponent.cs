@@ -6,5 +6,14 @@ using Unity.Mathematics;
 
 public struct TrapperComponent : IComponentData
 {
-    
+    public float secondsToFindNewTarget;
+    public float secondsPerFindNewTarget;
+
+    public enum TrapperState
+    {
+        Idle,
+        Moving,
+        SettingTrap,
+    }
+    public TrapperState currentState;
 }
