@@ -362,13 +362,56 @@ public partial struct ECSGameManagerSystem : ISystem
         {
             position = new int2(x, y),
         });
-
         state.EntityManager.AddComponentData<ObstacleComponent>(obstacle, new ObstacleComponent { });
 
         state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
                 .ElementAt(x + y * gameManager.width).isOccupied = true;
 
         return obstacle;
+    }
+
+    public Entity AddResource(ref SystemState state, int x, int y)
+    {
+        ECSGameManager gameManager = SystemAPI.GetSingleton<ECSGameManager>();
+        Entity resource = state.EntityManager.Instantiate(gameManager.workerPrefab);
+
+        state.EntityManager.SetComponentData(resource, LocalTransform.FromPosition(x, y, 0));
+        state.EntityManager.AddComponentData<GridPositionComponent>(resource, new GridPositionComponent
+        {
+            position = new int2(x, y),
+        });
+        state.EntityManager.AddComponentData<ResourceComponent>(resource, new ResourceComponent
+        {
+            amount = 10,
+        });
+        state.EntityManager.AddComponentData<ObstacleComponent>(resource, new ObstacleComponent { });
+
+        state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
+                .ElementAt(x + y * gameManager.width).isOccupied = true;
+
+        return resource;
+    }
+
+    public Entity AddBuilding(ref SystemState state, int x, int y)
+    {
+        ECSGameManager gameManager = SystemAPI.GetSingleton<ECSGameManager>();
+        Entity building = state.EntityManager.Instantiate(gameManager.workerPrefab);
+
+        state.EntityManager.SetComponentData(building, LocalTransform.FromPosition(x, y, 0));
+        state.EntityManager.AddComponentData<GridPositionComponent>(building, new GridPositionComponent
+        {
+            position = new int2(x, y),
+        });
+        state.EntityManager.AddComponentData<HealthComponent>(building, new HealthComponent
+        {
+            health = 25,
+            maxHealth = 25,
+        });
+        HealthBarReference.CreateHealthBar(building, 25);
+        state.EntityManager.AddComponentData<ObstacleComponent>(building, new ObstacleComponent { });
+        state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
+                .ElementAt(x + y * gameManager.width).isOccupied = true;
+        return building;
     }
 
     //public Entity AddTrap(ref SystemState state, int x, int y)

@@ -7,13 +7,14 @@ public class ResourceManager : MonoBehaviour
     [HideInInspector]
     public int[] teamResources;
     public int teamNum = 2;
-    
+    public int startingResources = 20;
+
     private void Start()
     {
         teamResources = new int[teamNum];
         for (int i = 0; i < teamNum; i++)
         {
-            teamResources[i] = 20;
+            teamResources[i] = startingResources;
         }
     }
 

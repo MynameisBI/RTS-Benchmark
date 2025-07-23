@@ -169,9 +169,6 @@ public class Worker : Unit
                     }
                 }
                 break;
-
-            default:
-                break;
         }
     }
 }

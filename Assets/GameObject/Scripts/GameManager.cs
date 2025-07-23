@@ -1,7 +1,6 @@
-using Mono.Cecil;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,6 +9,10 @@ public class GameManager : MonoBehaviour
 
     public int team1UnitCount;
     public int team2UnitCount;
+
+    public string selectedMapName;
+    [HideInInspector]
+    public string selectedMapFile;
 
     [Header("Unit Prefabs")]
     public GameObject lightUnitPrefab;
@@ -44,10 +47,44 @@ public class GameManager : MonoBehaviour
     {
         if (!initialized)
         {
+            MapData loadedMapData = null;
+            // Load MapData from selectedMapName
+            if (File.Exists(selectedMapFile))
+            {
+                string json = File.ReadAllText(selectedMapFile);
+                loadedMapData = JsonUtility.FromJson<MapData>(json);
+            }
 
-            for (int team = 1; team <= 2; team ++)
-                for (int i = 0; i < 1; i++)
-                    AddUnit(1, Random.Range(0, width), Random.Range(0, height), team);
+            foreach (UnitData unitData in loadedMapData.units)
+            {
+                if (unitData.id < 0 || 9 < unitData.id)
+                {
+                    Debug.LogError($"Invalid unit id: {unitData.id}. Must be 0 to 9.");
+                    continue; // Skip invalid unit
+                }
+
+                if (0 <= unitData.id && unitData.id <= 6)
+                {
+                    AddUnit(unitData.id, unitData.x, unitData.y, unitData.team);
+                }
+
+                switch (unitData.id)
+                {
+                    case 7: // Wall
+                        AddWall(unitData.x, unitData.y);
+                        break;
+                    case 8: // Resource
+                        AddResource(unitData.x, unitData.y);
+                        break;
+                    case 9: // Building
+                        AddBuilding(unitData.x, unitData.y, unitData.team, true); // isGod = true for loading
+                        break;
+                }
+            }
+
+            //for (int team = 1; team <= 2; team ++)
+            //    for (int i = 0; i < 1; i++)
+            //        AddUnit(1, Random.Range(0, width), Random.Range(0, height), team);
 
             //for (int i = 0; i < 20; i++)
             //    AddUnit(-1, Random.Range(0, width), Random.Range(0, height), 1);
@@ -55,11 +92,11 @@ public class GameManager : MonoBehaviour
             //    AddUnit(-1, Random.Range(0, width), Random.Range(0, height), 2);
 
 
-            for (int i = 1; i < width - 1; i += 2)
-                AddWall(i, i);
-            for (int i = 1; i < width - 1; i += 2)
-                AddWall(i, height - i);
-            
+            //for (int i = 1; i < width - 1; i += 2)
+            //    AddWall(i, i);
+            //for (int i = 1; i < width - 1; i += 2)
+            //    AddWall(i, height - i);
+
             //for (int i = 1; i < 4; i++)
             //    AddResource(Random.Range(0, width), Random.Range(0, height));
 
@@ -74,21 +111,24 @@ public class GameManager : MonoBehaviour
         switch (id)
         {
             case 0:
-                unit = Instantiate(lightUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                unit = Instantiate(wandererUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             case 1:
-                unit = Instantiate(heavyUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                unit = Instantiate(lightUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             case 2:
-                unit = Instantiate(rangeUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                unit = Instantiate(heavyUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             case 3:
-                unit = Instantiate(trapperUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                unit = Instantiate(rangeUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             case 4:
-                unit = Instantiate(healerUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                unit = Instantiate(trapperUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             case 5:
+                unit = Instantiate(healerUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
+                break;
+            case 6:
                 unit = Instantiate(workerUnitPrefab, new Vector3(x, y, 0), Quaternion.identity).GetComponent<Unit>();
                 break;
             default:

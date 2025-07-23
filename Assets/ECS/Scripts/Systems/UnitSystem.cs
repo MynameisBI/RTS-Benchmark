@@ -56,8 +56,6 @@ public partial struct UnitSystem : ISystem
                     if (teamComponent.ValueRO.teamId != trapTeamComponent.ValueRO.teamId &&
                         gridPositionComponent.ValueRW.position.Equals(trapGridPositionComponent.ValueRO.position))
                     {
-                        Debug.Log($"Unit {entity.Index} stepped on a trap at position {trapGridPositionComponent.ValueRO.position}");
-
                         if (trapComponent.ValueRO.counter <= 0)
                             continue;
 
