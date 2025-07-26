@@ -76,15 +76,7 @@ public partial struct FighterSystem : ISystem
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
                                 unitPathBuffer.Clear();
-                                var job = new ECSAStarPathfinder
-                                {
-                                    start = gridPositionComponent.ValueRW.position,
-                                    goal = (int2)unitComponent.ValueRO.targetPosition,
-                                    gridSize = new int2(gameManager.width, gameManager.height),
-                                    occupationCells = SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity),
-                                    pathBuffer = unitPathBuffer,
-                                };
-                                job.Execute();
+                                unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else
                             {
@@ -109,23 +101,6 @@ public partial struct FighterSystem : ISystem
                                     fighterComponent.ValueRW.currentState = FighterComponent.FighterState.Attacking;
                                 }
                             }
-                            
-                            // Check for traps
-                            //foreach (var (trapGridObject, trap, entity) in SystemAPI.Query<RefRO<GridEntity>, RefRW<ECSTrap>>().WithEntityAccess())
-                            //{
-                            //    if (gridPositionComponent.ValueRW.position == new int2(trapGridObject.ValueRO.x, trapGridObject.ValueRO.y))
-                            //    {
-                            //        if (trap.ValueRW.counter <= 0)
-                            //            continue;
-
-                            //        if (--trap.ValueRW.counter <= 0)
-                            //        {
-                            //            ecb.DestroyEntity(entity);
-                            //        }
-                            //        break;
-                            //    }
-                            //}
-
                         }
                     }
 

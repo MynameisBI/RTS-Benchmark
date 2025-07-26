@@ -18,12 +18,22 @@ public struct ECSGameManager : IComponentData
     public Entity healerPrefab;
     public Entity trapperPrefab;
     public Entity workerPrefab;
-    public Entity obstaclePrefab;
+    public Entity wallPrefab;
+    public Entity resourcePrefab;
+    public Entity buildingPrefab;
     public Entity trapPrefab;
 }
 
 public struct OccupationCellBuffer : IBufferElementData
 {
     public bool isOccupied;
+}
+
+public struct UnitDataBuffer : IBufferElementData
+{
+    public int id;
+    public int x;
+    public int y;
+    public int team;
 }
 

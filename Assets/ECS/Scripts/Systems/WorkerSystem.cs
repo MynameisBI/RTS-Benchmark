@@ -4,10 +4,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
-using System.Collections.Generic;
 using static WorkerComponent;
-using System.Resources;
+
 
 [BurstCompile]
 public partial struct WorkerSystem : ISystem
@@ -31,169 +29,199 @@ public partial struct WorkerSystem : ISystem
         Entity gameManagerEntity = SystemAPI.GetSingletonEntity<ECSGameManager>();
         DynamicBuffer<TeamResourceBuffer> teamResourceBuffer = SystemAPI.GetSingletonBuffer<TeamResourceBuffer>();
 
-        //foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, workerComponent, teamComponent, transform) in
-        //        SystemAPI.Query<RefRW<GridPositionComponent>, RefRW<UnitComponent>, DynamicBuffer<UnitPathBuffer>,
-        //        RefRW<WorkerComponent>, RefRO<TeamComponent>, RefRW<LocalTransform>>())
-        //{
-        //    switch (workerComponent.ValueRO.currentState)
-        //    {
-        //        case WorkerUnitState.Idle:
-        //            if (teamResourceBuffer[teamComponent.ValueRO.teamId].amount > 10)
-        //            {
-        //                workerComponent.ValueRW.targetResourceEntity = Entity.Null;
-        //                workerComponent.ValueRW.currentState = WorkerUnitState.Building;
-        //            }
-        //            else
-        //            {
-        //                //foreach (var (trapGridPositionComponent, trapComponent, trapTeamComponent, trapEntity) in
-        //                //SystemAPI.Query<RefRO<GridPositionComponent>, RefRW<TrapComponent>, RefRO<TeamComponent>>().WithEntityAccess())
-        //                //{
-        //                //    if (teamComponent.ValueRO.teamId != trapTeamComponent.ValueRO.teamId &&
-        //                //        gridPositionComponent.ValueRW.position.Equals(trapGridPositionComponent.ValueRO.position))
-        //                //    {
-        //                //        if (trapComponent.ValueRO.counter <= 0)
-        //                //            continue;
+        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, workerComponent, teamComponent, transform) in
+                SystemAPI.Query<RefRW<GridPositionComponent>, RefRW<UnitComponent>, DynamicBuffer<UnitPathBuffer>,
+                RefRW<WorkerComponent>, RefRO<TeamComponent>, RefRW<LocalTransform>>())
+        {
+            switch (workerComponent.ValueRO.currentState)
+            {
+                case WorkerUnitState.Idle:
+                    Debug.Log("1");
+                    if (teamResourceBuffer[teamComponent.ValueRO.teamId - 1].amount > 10)
+                    {
+                        workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                        workerComponent.ValueRW.currentState = WorkerUnitState.Building;
+                    }
+                    else
+                    {
+                        Entity target = Entity.Null;
+                        float closestDistance = float.MaxValue;
+                        foreach (var (resourceGridPositionComponent, resourceComponent, entity) in
+                                SystemAPI.Query<RefRO<GridPositionComponent>, RefRW<ResourceComponent>>().WithEntityAccess())
+                        {
+                            float distance = math.distance(resourceGridPositionComponent.ValueRO.position,
+                                    gridPositionComponent.ValueRO.position);
+                            if (distance < closestDistance)
+                            {
+                                closestDistance = distance;
+                                target = entity;
+                            }
 
-        //                //        if (--trapComponent.ValueRW.counter <= 0)
-        //                //            ecb.DestroyEntity(trapEntity);
+                            if (target != Entity.Null)
+                            {
+                                NativeList<int2> targetAdjacentTiles = new NativeList<int2>(4, Allocator.Temp);
+                                GeneralUtils.GetAdjacentWalkableTiles(resourceGridPositionComponent.ValueRO.position,
+                                        gameManager, SystemAPI.GetSingletonBuffer<OccupationCellBuffer>(), ref targetAdjacentTiles);
 
-        //                //        break;
-        //                //    }
-        //                //}
+                                if (targetAdjacentTiles.Length >= 1)
+                                {
+                                    workerComponent.ValueRW.targetResourceEntity = target;
+                                    unitPathBuffer.Clear();
+                                    unitComponent.ValueRW.targetPosition = targetAdjacentTiles[rng.NextInt(0, targetAdjacentTiles.Length)];
+                                    unitComponent.ValueRW.hasTriedFindPath = false;
+                                    workerComponent.ValueRW.currentState = WorkerUnitState.Moving;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
 
-        //                Resource[] resources = FindObjectsOfType<Resource>();
-        //                if (resources.Length > 0)
-        //                {
-        //                    Resource target = null;
-        //                    float closestDistance = float.MaxValue;
-        //                    foreach (Resource resource in resources)
-        //                    {
-        //                        float distance = Vector2.Distance(transform.position, resource.transform.position);
-        //                        if (distance < closestDistance)
-        //                        {
-        //                            closestDistance = distance;
-        //                            target = resource;
-        //                        }
-        //                    }
+                case WorkerUnitState.Moving:
+                    Debug.Log("2");
+                    if (unitPathBuffer.Length == 0)
+                        if (workerComponent.ValueRO.targetResourceEntity != Entity.Null)
+                            workerComponent.ValueRW.currentState = WorkerUnitState.Extracting;
+                        else
+                            workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
 
-        //                    if (target != null)
-        //                    {
-        //                        List<Vector2Int> targetAdjacentTiles = gameManager.GetAdjacentWalkableTiles(target.gridX, target.gridY);
-        //                        if (targetAdjacentTiles.Count >= 1)
-        //                        {
-        //                            targetResource = target;
-        //                            Vector2Int targetTile = targetAdjacentTiles[Random.Range(0, targetAdjacentTiles.Count)];
-        //                            Move(targetTile.x, targetTile.y);
-        //                            currentState = WorkerUnitState.Moving;
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            break;
+                    else if (unitPathBuffer.Length > 0)
+                    {
+                        //Debug.Log("Z");
+                        float2 currentPosition = new float2(transform.ValueRW.Position.x, transform.ValueRW.Position.y);
+                        float2 actualPosition = GeneralUtils.MoveTowards(currentPosition, unitPathBuffer[0].position,
+                                unitComponent.ValueRO.speed * SystemAPI.Time.DeltaTime);
+                        transform.ValueRW.Position = new float3(actualPosition.x, actualPosition.y, 0);
 
-        //        case WorkerUnitState.Moving:
-        //            if (currentPath.Count == 0)
-        //                if (targetResource != null)
-        //                    currentState = WorkerUnitState.Extracting;
-        //                else
-        //                    currentState = WorkerUnitState.Idle;
+                        // Arrive at new node
+                        if (math.distance(actualPosition, unitPathBuffer[0].position) < 0.1f)
+                        {
+                            //Debug.Log("a");
+                            // Check if new node is occupied while moving
+                            if (!GeneralUtils.IsWalkable(unitPathBuffer[0].position, gameManager, SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity)))
+                            {
+                                transform.ValueRW.Position =
+                                        new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
+                                unitPathBuffer.Clear();
+                                unitComponent.ValueRW.hasTriedFindPath = false;
+                            }
+                            else
+                            {
+                                gridPositionComponent.ValueRW.position = unitPathBuffer[0].position;
+                                unitPathBuffer.RemoveAt(0);
 
-        //            else if (currentPath.Count > 0)
-        //            {
-        //                Vector2Int targetPosition = currentPath[0];
-        //                transform.position = Vector2.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+                                if (workerComponent.ValueRO.targetResourceEntity != Entity.Null &&
+                                        !state.EntityManager.Exists(workerComponent.ValueRW.targetResourceEntity))
+                                {
+                                    workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                                    workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
+                                }
+                            }
+                        }
+                    }
+                    break;
 
-        //                // Arrive at new node
-        //                if (Vector2.Distance(transform.position, targetPosition) < 0.1f)
-        //                {
-        //                    // Check if new node is occupied while moving
-        //                    if (!gameManager.GetObstaclesInBoolean(false)[targetPosition.x, targetPosition.y])
-        //                    {
-        //                        transform.position = new Vector2(gridX, gridY);
-        //                        Move(targetPosition.x, targetPosition.y);
-        //                    }
-        //                    else
-        //                    {
-        //                        currentPath.RemoveAt(0);
-        //                        gridX = targetPosition.x;
-        //                        gridY = targetPosition.y;
+                case WorkerUnitState.Building:
+                    Debug.Log("3");
+                    if (teamResourceBuffer.ElementAt(teamComponent.ValueRO.teamId - 1).amount < 10)
+                    {
+                        workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                        workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
+                        break;
+                    }
 
-        //                        if (targetResource != null && targetResource.IsDestroyed())
-        //                        {
-        //                            targetResource = null;
-        //                            currentState = WorkerUnitState.Idle;
-        //                        }
+                    NativeList<int2> adjacentWalkableTiles = new NativeList<int2>(4, Allocator.Temp);
+                    GeneralUtils.GetAdjacentWalkableTiles( gridPositionComponent.ValueRW.position,
+                        gameManager, SystemAPI.GetSingletonBuffer<OccupationCellBuffer>(), ref adjacentWalkableTiles);
 
-        //                        Trap[] traps = FindObjectsOfType<Trap>();
-        //                        foreach (Trap trap in traps)
-        //                        {
-        //                            if (gridX == trap.gridX && gridY == trap.gridY && team != trap.team)
-        //                            {
+                    if (adjacentWalkableTiles.Length >= 2)
+                    {
+                        int2 adjacentWalkableTile = adjacentWalkableTiles[rng.NextInt(0, adjacentWalkableTiles.Length)];
+                        if (GeneralUtils.IsWalkable(adjacentWalkableTile, gameManager, SystemAPI.GetSingletonBuffer<OccupationCellBuffer>()))
+                        {
+                            teamResourceBuffer.ElementAt(teamComponent.ValueRO.teamId - 1).amount -= 10;
 
-        //                                trap.OnHit(this);
-        //                                break;
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
+                            // Add building
+                            Entity building = ecb.Instantiate(gameManager.buildingPrefab);
 
-        //            break;
+                            ecb.SetComponent(building, LocalTransform.FromPosition(adjacentWalkableTile.x, adjacentWalkableTile.y, 0));
+                            ecb.AddComponent<GridPositionComponent>(building, new GridPositionComponent
+                            {
+                                position = adjacentWalkableTile,
+                            });
+                            ecb.AddComponent<HealthComponent>(building, new HealthComponent
+                            {
+                                health = 25,
+                                maxHealth = 25,
+                            });
+                            //HealthBarReference.CreateHealthBar(building, 25);
+                            ecb.AddComponent<ObstacleComponent>(building, new ObstacleComponent { });
+                            state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
+                                    .ElementAt(adjacentWalkableTile.x + adjacentWalkableTile.y * gameManager.width).isOccupied = true;
 
-        //        case WorkerUnitState.Building:
-        //            bool[,] walkableMap = gameManager.GetObstaclesInBoolean(false);
+                            int i = 0;
+                            for (int x = 0; x < gameManager.width; x++)
+                                for (int y = 0; y < gameManager.height; y++)
+                                    i = state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
+                                            .ElementAt(x + y * gameManager.width).isOccupied ? i+1 : i;
+                            Debug.Log($"{i}");
 
-        //            List<Vector2Int> adjacentWalkableTiles = gameManager.GetAdjacentWalkableTiles(gridX, gridY);
+                            workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                            workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
+                        }
+                    }
+                    else if (adjacentWalkableTiles.Length == 1)
+                    {
+                        workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                        workerComponent.ValueRW.currentState = WorkerUnitState.Moving;
+                        int targetX, targetY;
+                        int gridX = gridPositionComponent.ValueRW.position.x;
+                        int gridY = gridPositionComponent.ValueRW.position.y;
+                        do { targetX = rng.NextInt(gridX - 6, gridX + 6); } while (targetX >= -2 && targetX <= 2);
+                        do { targetY = rng.NextInt(gridY - 6, gridY + 6); } while (targetY >= -2 && targetY <= 2);
+                        unitComponent.ValueRW.targetPosition =
+                            new int2(Mathf.Clamp(targetX, 0, gameManager.width), Mathf.Clamp(targetY, 0, gameManager.height));
+                        unitComponent.ValueRW.hasTriedFindPath = false;
+                    }
+                    else
+                    {
+                        workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                        workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
+                    }
 
-        //            if (adjacentWalkableTiles.Count >= 2)
-        //            {
-        //                Vector2Int adjacentWalkableTile = adjacentWalkableTiles[Random.Range(0, adjacentWalkableTiles.Count)];
-        //                if (gameManager.AddBuilding(adjacentWalkableTile.x, adjacentWalkableTile.y, team))
-        //                {
-        //                    resourceManager.AddResource(team, -10);
-        //                    targetResource = null;
-        //                    currentState = WorkerUnitState.Idle;
-        //                }
-        //            }
-        //            else if (adjacentWalkableTiles.Count == 1)
-        //            {
-        //                targetResource = null;
-        //                currentState = WorkerUnitState.Moving;
-        //                int targetX, targetY;
-        //                do { targetX = Random.Range(gridX - 6, gridX + 6); } while (targetX >= -2 && targetX <= 2);
-        //                do { targetY = Random.Range(gridY - 6, gridY + 6); } while (targetY >= -2 && targetY <= 2);
-        //                Move(Mathf.Clamp(targetX, 0, gameManager.width), Mathf.Clamp(targetY, 0, gameManager.height));
-        //            }
-        //            else
-        //            {
-        //                targetResource = null;
-        //                currentState = WorkerUnitState.Idle;
-        //            }
+                    adjacentWalkableTiles.Dispose();
 
-        //            break;
+                    break;
 
-        //        case WorkerUnitState.Extracting:
-        //            if (secondsToAttack <= 0)
-        //            {
-        //                secondsToAttack = secondsPerAttack;
-        //                if (targetResource != null && targetResource.gameObject.activeInHierarchy && targetResource.Extract())
-        //                {
-        //                    resourceManager.AddResource(team, 1);
-        //                    if (resourceManager.GetResourceAmount(team) > 10)
-        //                    {
-        //                        currentState = WorkerUnitState.Idle;
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    targetResource = null;
-        //                    currentState = WorkerUnitState.Idle;
-        //                }
-        //            }
-        //            break;
-        //    }
-        //}
+                case WorkerUnitState.Extracting:
+                    //Debug.Log("4");
+                    if (unitComponent.ValueRW.secondsToAttack <= 0)
+                    {
+                        unitComponent.ValueRW.secondsToAttack = 1 / unitComponent.ValueRO.attackSpeed;
+                        
+                        if (workerComponent.ValueRO.targetResourceEntity != Entity.Null &&
+                            state.EntityManager.Exists(workerComponent.ValueRO.targetResourceEntity))
+                        {
+                            RefRW<ResourceComponent> resourceComponent =
+                                SystemAPI.GetComponentRW<ResourceComponent>(workerComponent.ValueRO.targetResourceEntity);
+                            if (resourceComponent.ValueRO.amount > 0)
+                            {
+                                resourceComponent.ValueRW.amount -= 1;
+                                if (resourceComponent.ValueRO.amount == 0)
+                                    ecb.DestroyEntity(workerComponent.ValueRO.targetResourceEntity);
+                                
+                                teamResourceBuffer.ElementAt(teamComponent.ValueRO.teamId - 1).amount += 1;
+                            }
+                        }
+                        else
+                        {
+                            workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                            workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
+                        }
+                    }
+                    break;
+            }
+        }
 
         ecb.Playback(state.EntityManager);
         ecb.Dispose();

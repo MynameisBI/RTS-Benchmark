@@ -76,15 +76,7 @@ public partial struct HealerSystem : ISystem
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
                                 unitPathBuffer.Clear();
-                                var job = new ECSAStarPathfinder
-                                {
-                                    start = gridPositionComponent.ValueRW.position,
-                                    goal = (int2)unitComponent.ValueRO.targetPosition,
-                                    gridSize = new int2(gameManager.width, gameManager.height),
-                                    occupationCells = SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity),
-                                    pathBuffer = unitPathBuffer,
-                                };
-                                job.Execute();
+                                unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else
                             {

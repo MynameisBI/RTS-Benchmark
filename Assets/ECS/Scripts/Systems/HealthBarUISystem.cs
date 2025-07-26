@@ -7,22 +7,55 @@ using UnityEngine;
 [UpdateInGroup(typeof(PresentationSystemGroup))]
 public partial class HealthBarUISystem : SystemBase
 {
+    private List<HealthBarReference> healthBarReferences;
+
+    protected override void OnCreate()
+    {
+        base.OnCreate();
+        healthBarReferences = new List<HealthBarReference>();
+    }
+
     protected override void OnUpdate()
     {
-        foreach (var refObj in GameObject.FindObjectsOfType<HealthBarReference>())
-        {
-            if (World.DefaultGameObjectInjectionWorld.EntityManager.HasComponent<HealthComponent>(refObj.entity))
-            {
-                var healthComponent = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<HealthComponent>(refObj.entity);
-                refObj.slider.maxValue = healthComponent.maxHealth;
-                refObj.slider.value = healthComponent.health;
+        List<Entity> noHealthBarEntities = new List<Entity> ();
 
-                var transform = World.DefaultGameObjectInjectionWorld.EntityManager.GetComponentData<LocalTransform>(refObj.entity);
-                refObj.transform.position = transform.Position;
+        foreach (var (transform, healthComponent, entity) in SystemAPI.Query<RefRO<LocalTransform>, RefRO<HealthComponent>>().WithEntityAccess())
+        {
+            HealthBarReference healthBarReference = GetHealthBarReference(entity);
+            if (healthBarReference == null)
+            {
+                noHealthBarEntities.Add(entity);
             } else
             {
-                GameObject.Destroy(refObj.gameObject);
+                healthBarReference.slider.maxValue = healthComponent.ValueRO.maxHealth;
+                healthBarReference.slider.value = healthComponent.ValueRO.health;
+                healthBarReference.transform.position = transform.ValueRO.Position;
             }
         }
+
+        foreach (Entity entity in noHealthBarEntities)
+        {
+            healthBarReferences.Add(
+                    HealthBarReference.CreateHealthBar(entity, SystemAPI.GetComponent<HealthComponent>(entity).maxHealth));
+        }
+
+        for (int i = healthBarReferences.Count - 1; i >= 0; i--)
+        {
+            if (!World.DefaultGameObjectInjectionWorld.EntityManager.Exists(healthBarReferences[i].entity))
+            {
+                GameObject.Destroy(healthBarReferences[i].gameObject);
+                healthBarReferences.RemoveAt(i);
+            }
+        }
+    }
+
+    private HealthBarReference GetHealthBarReference(Entity entity)
+    {
+        foreach (HealthBarReference refObj in healthBarReferences)
+        {
+            if (refObj.entity == entity)
+                return refObj;
+        }
+        return null;
     }
 }

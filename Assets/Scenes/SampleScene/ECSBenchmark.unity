@@ -132,8 +132,9 @@ GameObject:
   m_Component:
   - component: {fileID: 676041011}
   - component: {fileID: 676041010}
+  - component: {fileID: 676041012}
   m_Layer: 0
-  m_Name: ECSGameManager
+  m_Name: ECSGameManagers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -153,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 50
   height: 50
-  unitCount: 10
+  unitCount: 1
   unitPrefab: {fileID: 1838401933740867757, guid: 9b518d75e9ac84b4488aac8205cf8145, type: 3}
   wandererPrefab: {fileID: 2365146204692483543, guid: 089ec834abce752429509a35ac17a8f9, type: 3}
   lightPrefab: {fileID: 2365146204692483543, guid: 7172900d6b50f8444bce2a9a795957ae, type: 3}
@@ -162,7 +163,9 @@ MonoBehaviour:
   healerPrefab: {fileID: 2365146204692483543, guid: 9d4b7cb58c14b0f42a68fa13a3904df4, type: 3}
   trapperPrefab: {fileID: 2365146204692483543, guid: c7be49b99752a0f4a8f71b5e402d5bc9, type: 3}
   workerPrefab: {fileID: 2365146204692483543, guid: f20a51f8a1d974b4ab9b89e1b7ca5eac, type: 3}
-  obstaclePrefab: {fileID: 1393334593569357761, guid: bef2b6c4035c8374fbb19e42285a7f86, type: 3}
+  wallPrefab: {fileID: 1393334593569357761, guid: bef2b6c4035c8374fbb19e42285a7f86, type: 3}
+  resourcePrefab: {fileID: 888231081543178586, guid: c1a3cd3448b89944fb0ae0996d2ebac9, type: 3}
+  buildingPrefab: {fileID: 1771171759359661847, guid: 2066488bf3496794baddd98d03a9e7c0, type: 3}
   trapPrefab: {fileID: 1838401933740867757, guid: fa395a81b3981254488a13cc3aa66153, type: 3}
 --- !u!4 &676041011
 Transform:
@@ -179,6 +182,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &676041012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 676041009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1f52a0c410bf5341897d37280ee859a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teamResources: 
+  teamNum: 2
+  startingResources: 2000
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

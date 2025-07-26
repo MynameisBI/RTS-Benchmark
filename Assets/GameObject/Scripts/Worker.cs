@@ -121,8 +121,6 @@ public class Worker : Unit
                 break;
 
             case WorkerUnitState.Building:
-                bool[,] walkableMap = gameManager.GetObstaclesInBoolean(false);
-
                 List<Vector2Int> adjacentWalkableTiles = gameManager.GetAdjacentWalkableTiles(gridX, gridY);
 
                 if (adjacentWalkableTiles.Count >= 2)

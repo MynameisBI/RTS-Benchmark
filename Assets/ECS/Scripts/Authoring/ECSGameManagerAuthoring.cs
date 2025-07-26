@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
+using System.IO;
 
 public class ECSGameManagerAuthoring : MonoBehaviour
 {
@@ -9,6 +8,10 @@ public class ECSGameManagerAuthoring : MonoBehaviour
     public int height;
 
     public int unitCount;
+
+    public string selectedMapName;
+    [HideInInspector]
+    public string selectedMapFile;
 
     public GameObject unitPrefab;
     public GameObject wandererPrefab;
@@ -18,13 +21,10 @@ public class ECSGameManagerAuthoring : MonoBehaviour
     public GameObject healerPrefab;
     public GameObject trapperPrefab;
     public GameObject workerPrefab;
-    public GameObject obstaclePrefab;
+    public GameObject wallPrefab;
+    public GameObject resourcePrefab;
+    public GameObject buildingPrefab;
     public GameObject trapPrefab;
-
-    private void Start()
-    {
-
-    }
 
     public class Baker : Baker<ECSGameManagerAuthoring>
     {
@@ -44,16 +44,38 @@ public class ECSGameManagerAuthoring : MonoBehaviour
                 healerPrefab = GetEntity(authoring.healerPrefab, TransformUsageFlags.Dynamic),
                 trapperPrefab = GetEntity(authoring.trapperPrefab, TransformUsageFlags.Dynamic),
                 workerPrefab = GetEntity(authoring.workerPrefab, TransformUsageFlags.Dynamic),
-                obstaclePrefab = GetEntity(authoring.obstaclePrefab, TransformUsageFlags.Dynamic),
+                wallPrefab = GetEntity(authoring.wallPrefab, TransformUsageFlags.Dynamic),
+                resourcePrefab = GetEntity(authoring.resourcePrefab, TransformUsageFlags.Dynamic),
+                buildingPrefab = GetEntity(authoring.buildingPrefab, TransformUsageFlags.Dynamic),
                 trapPrefab = GetEntity(authoring.trapPrefab, TransformUsageFlags.Dynamic)
             });
-            var buffer = AddBuffer<OccupationCellBuffer>(entity);
+
+            var occupationCellBuffer = AddBuffer<OccupationCellBuffer>(entity);
             for (int i = 0; i < authoring.width * authoring.height; i++)
             {
-                buffer.Add(new OccupationCellBuffer
+                occupationCellBuffer.Add(new OccupationCellBuffer
                 {
                     isOccupied = false
                 });
+            }
+
+            var unitDataBuffer = AddBuffer<UnitDataBuffer>(entity);
+            MapData loadedMapData = null;
+            // Load MapData from selectedMapName
+            if (File.Exists(authoring.selectedMapFile))
+            {
+                string json = File.ReadAllText(authoring.selectedMapFile);
+                loadedMapData = JsonUtility.FromJson<MapData>(json);
+            }
+            foreach (UnitData unitData in loadedMapData.units)
+            {
+                unitDataBuffer.Add(new UnitDataBuffer
+                {
+                    id = unitData.id,
+                    x = unitData.x,
+                    y = unitData.y,
+                    team = unitData.team,
+                }); 
             }
         }
     }

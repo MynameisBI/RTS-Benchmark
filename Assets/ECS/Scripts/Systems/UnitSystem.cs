@@ -39,7 +39,7 @@ public partial struct UnitSystem : ISystem
                     start = gridPositionComponent.ValueRW.position,
                     goal = (int2)unitComponent.ValueRO.targetPosition,
                     gridSize = new int2(gameManager.width, gameManager.height),
-                    occupationCells = SystemAPI.GetBuffer<OccupationCellBuffer>(gameManagerEntity),
+                    occupationCells = state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>()),
                     pathBuffer = unitPathBuffer,
                 };
                 if (job.Execute())
