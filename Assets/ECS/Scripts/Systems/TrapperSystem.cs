@@ -98,17 +98,6 @@ public partial struct TrapperSystem : ISystem
                                 trapperComponent.ValueRW.currentState = TrapperComponent.TrapperState.SettingTrap;
                                 unitComponent.ValueRW.secondsToAttack = 1 / unitComponent.ValueRO.attackSpeed;
                             }
-
-                            //Trap[] traps = FindObjectsOfType<Trap>();
-                            //foreach (Trap trap in traps)
-                            //{
-                            //    if (gridX == trap.gridX && gridY == trap.gridY && team != trap.team)
-                            //    {
-
-                            //        trap.OnHit(this);
-                            //        break;
-                            //    }
-                            //}
                         }
                     }
 
@@ -142,7 +131,7 @@ public partial struct TrapperSystem : ISystem
                         });
                         ecb.AddComponent<TrapComponent>(trap, new TrapComponent
                         {
-                            damage = 10,
+                            trapper = unitComponent.ValueRO,
                             counter = 1,
                         });
                     }

@@ -155,6 +155,8 @@ MonoBehaviour:
   width: 50
   height: 50
   unitCount: 1
+  selectedMapName: MapTest1
+  selectedMapFile: D:/Projects/Unity/RTS benchmark/Assets\Maps\MapTest1.json
   unitPrefab: {fileID: 1838401933740867757, guid: 9b518d75e9ac84b4488aac8205cf8145, type: 3}
   wandererPrefab: {fileID: 2365146204692483543, guid: 089ec834abce752429509a35ac17a8f9, type: 3}
   lightPrefab: {fileID: 2365146204692483543, guid: 7172900d6b50f8444bce2a9a795957ae, type: 3}

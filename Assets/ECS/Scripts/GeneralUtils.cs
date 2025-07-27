@@ -38,17 +38,17 @@ public class GeneralUtils
         SuccessAndKilled
     }
 
-    public static DamageResult Damage(int damage, HealthComponent healthComponent)
+    public static DamageResult Damage(int damage, RefRW<HealthComponent> healthComponent)
     {
-        if (healthComponent.health <= 0)
+        if (healthComponent.ValueRW.health <= 0)
         {
             return DamageResult.Failed;
         }
 
-        healthComponent.health -= damage;
-        if (healthComponent.health <= 0)
+        healthComponent.ValueRW.health -= damage;
+        if (healthComponent.ValueRW.health <= 0)
         {
-            healthComponent.health = 0;
+            healthComponent.ValueRW.health = 0;
             return DamageResult.SuccessAndKilled;
         }
         return DamageResult.Success;

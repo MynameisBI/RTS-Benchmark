@@ -3,9 +3,9 @@ using Unity.Transforms;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
-using TMPro;
-using UnityEngine;
+using static GeneralUtils;
 
+[BurstCompile]
 public partial struct UnitSystem : ISystem
 {
     Unity.Mathematics.Random rng;
@@ -25,9 +25,9 @@ public partial struct UnitSystem : ISystem
         ECSGameManager gameManager = SystemAPI.GetSingleton<ECSGameManager>();
         Entity gameManagerEntity = SystemAPI.GetSingletonEntity<ECSGameManager>();
 
-        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, teamComponent, transform, entity) in
+        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, teamComponent, transform, healthComponent, entity) in
                 SystemAPI.Query<RefRW<GridPositionComponent>, RefRW<UnitComponent>,
-                DynamicBuffer<UnitPathBuffer>, RefRO<TeamComponent>, RefRW<LocalTransform>>().WithEntityAccess())
+                DynamicBuffer<UnitPathBuffer>, RefRO<TeamComponent>, RefRW<LocalTransform>, RefRW<HealthComponent>>().WithEntityAccess())
         {
             unitComponent.ValueRW.secondsToAttack -= SystemAPI.Time.DeltaTime;
 
@@ -56,11 +56,13 @@ public partial struct UnitSystem : ISystem
                     if (teamComponent.ValueRO.teamId != trapTeamComponent.ValueRO.teamId &&
                         gridPositionComponent.ValueRW.position.Equals(trapGridPositionComponent.ValueRO.position))
                     {
-                        if (trapComponent.ValueRO.counter <= 0)
-                            continue;
+                        if (trapComponent.ValueRO.counter > 0)
+                            if (--trapComponent.ValueRW.counter <= 0)
+                                ecb.DestroyEntity(trapEntity);
 
-                        if (--trapComponent.ValueRW.counter <= 0)
-                            ecb.DestroyEntity(trapEntity);
+                        DamageResult result = Damage(trapComponent.ValueRO.trapper.damage, healthComponent);
+                        if (result == DamageResult.SuccessAndKilled)
+                            ecb.DestroyEntity(entity);
 
                         break;
                     }

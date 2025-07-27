@@ -109,10 +109,7 @@ public class Trapper : Unit
                     currentState = TrapperUnitState.Idle;
                     currentTarget = null;
 
-                    Trap trap = Instantiate(trapPrefab, new Vector2(gridX, gridY), Quaternion.identity).GetComponent<Trap>();
-                    trap.gridX = gridX;
-                    trap.gridY = gridY;
-                    trap.team = team;
+                    SpawnTrap(gridX, gridY);
                 }
                 break;
         }
@@ -146,5 +143,15 @@ public class Trapper : Unit
             Move(currentTarget.Value.x, currentTarget.Value.y);
             currentState = TrapperUnitState.Moving;
         }
+    }
+
+    public Trap SpawnTrap(int x, int y)
+    {
+        Trap trap = Instantiate(trapPrefab, new Vector2(x, y), Quaternion.identity).GetComponent<Trap>();
+        trap.gridX = x;
+        trap.gridY = y;
+        trap.team = team;
+        trap.trapper = this;
+        return trap;
     }
 }

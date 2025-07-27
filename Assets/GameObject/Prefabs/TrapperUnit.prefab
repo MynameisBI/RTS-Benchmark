@@ -103,7 +103,7 @@ MonoBehaviour:
   speed: 5
   health: 5
   range: 1
-  damage: 1
+  damage: 10
   attackSpeed: 1
   trapPrefab: {fileID: 974800517195905526, guid: 1cf4267273479e745a9140bf29139284, type: 3}
   maxDistanceFromPreviousTarget: 6

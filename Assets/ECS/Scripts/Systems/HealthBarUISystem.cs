@@ -35,8 +35,11 @@ public partial class HealthBarUISystem : SystemBase
 
         foreach (Entity entity in noHealthBarEntities)
         {
-            healthBarReferences.Add(
-                    HealthBarReference.CreateHealthBar(entity, SystemAPI.GetComponent<HealthComponent>(entity).maxHealth));
+            HealthBarReference healthBarReference =
+                    HealthBarReference.CreateHealthBar(entity, SystemAPI.GetComponent<HealthComponent>(entity).maxHealth,
+                            SystemAPI.GetComponent<TeamComponent>(entity).teamId);
+            healthBarReferences.Add(healthBarReference);
+                    
         }
 
         for (int i = healthBarReferences.Count - 1; i >= 0; i--)
