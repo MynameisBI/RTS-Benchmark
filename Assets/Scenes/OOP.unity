@@ -464,8 +464,8 @@ MonoBehaviour:
   height: 50
   team1UnitCount: 1
   team2UnitCount: 20
-  selectedMapName: FighterTest
-  selectedMapFile: D:/Projects/Unity/RTS benchmark/Assets\Maps\FighterTest.json
+  selectedMapName: PerformanceTest
+  selectedMapFile: D:/Projects/Unity/RTS benchmark/Assets\Maps\PerformanceTest.json
   lightUnitPrefab: {fileID: 2365146204692483543, guid: 8b59c29cb5d407e44b40103c27ff2877, type: 3}
   heavyUnitPrefab: {fileID: 2365146204692483543, guid: bd5b5996bad7c2f4a93760b1c7bb6c87, type: 3}
   rangeUnitPrefab: {fileID: 2365146204692483543, guid: ad3faf9ad56fa3c489f3a6c6b2ffe1ca, type: 3}
