@@ -69,6 +69,9 @@ public struct ECSAStarPathfinder
             if (current.Equals(goal))
             {
                 ReconstructPath(cameFrom, current);
+                openList.Dispose();
+                closedSet.Dispose();
+                cameFrom.Dispose();
                 return true;
             }
 

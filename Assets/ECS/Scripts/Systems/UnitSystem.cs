@@ -4,6 +4,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using static GeneralUtils;
+using System.Collections.Generic;
+using UnityEngine;
 
 [BurstCompile]
 public partial struct UnitSystem : ISystem
@@ -24,6 +26,8 @@ public partial struct UnitSystem : ISystem
         ecb = new EntityCommandBuffer(Allocator.TempJob);
         ECSGameManager gameManager = SystemAPI.GetSingleton<ECSGameManager>();
         Entity gameManagerEntity = SystemAPI.GetSingletonEntity<ECSGameManager>();
+        List<(RefRW<GridPositionComponent>, RefRW<UnitComponent>, DynamicBuffer<UnitPathBuffer>)> toBeFindPathEntities =
+                    new List<(RefRW<GridPositionComponent>, RefRW<UnitComponent>, DynamicBuffer<UnitPathBuffer>)>();
 
         foreach (var (gridPositionComponent, unitComponent, unitPathBuffer, teamComponent, transform, healthComponent, entity) in
                 SystemAPI.Query<RefRW<GridPositionComponent>, RefRW<UnitComponent>,
@@ -33,6 +37,8 @@ public partial struct UnitSystem : ISystem
 
             if (unitComponent.ValueRO.targetPosition != null && !unitComponent.ValueRO.hasTriedFindPath)
             {
+                toBeFindPathEntities.Add((gridPositionComponent, unitComponent, unitPathBuffer));
+
                 unitPathBuffer.Clear();
                 var job = new ECSAStarPathfinder
                 {
@@ -73,5 +79,43 @@ public partial struct UnitSystem : ISystem
 
         ecb.Playback(state.EntityManager);
         ecb.Dispose();
+
+        foreach (var (gridPositionComponent, unitComponent, unitPathBuffer) in toBeFindPathEntities)
+        {
+            //unitPathBuffer.Clear();
+
+            //bool[,] walkableMap = new bool[gameManager.width, gameManager.height];
+            //for (int i = 0; i < gameManager.width; i++)
+            //    for (int j = 0; j < gameManager.height; j++)
+            //        walkableMap[i, j] = IsWalkable(new int2(i, j), gameManager, state.EntityManager.GetBuffer<OccupationCellBuffer>(gameManagerEntity));
+
+            //AStarPathfinder pathfinder = new AStarPathfinder(walkableMap);
+            //List<Vector2Int> currentPath = pathfinder.FindPath(
+            //    new Vector2Int(gridPositionComponent.ValueRO.position.x, gridPositionComponent.ValueRO.position.x),
+            //    new Vector2Int(unitComponent.ValueRO.targetPosition.Value.x, unitComponent.ValueRO.targetPosition.Value.y));
+            //if (currentPath == null)
+            //    currentPath = new List<Vector2Int>();
+
+            //foreach (Vector2Int node in currentPath)
+            //{
+            //    unitPathBuffer.Add(new UnitPathBuffer
+            //    {
+            //        position = new int2(node.x, node.y)
+            //    });
+            //}
+
+            //unitComponent.ValueRW.hasRerenderedPath = false;
+
+            //var job = new ECSAStarPathfinder
+            //{
+            //    start = gridPositionComponent.ValueRW.position,
+            //    goal = (int2)unitComponent.ValueRO.targetPosition,
+            //    gridSize = new int2(gameManager.width, gameManager.height),
+            //    occupationCells = state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>()),
+            //    pathBuffer = unitPathBuffer,
+            //};
+            //if (job.Execute())
+            //    unitComponent.ValueRW.hasRerenderedPath = false;
+        }
     }
 }

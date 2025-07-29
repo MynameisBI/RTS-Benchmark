@@ -20,22 +20,22 @@ public class ResourceManager : MonoBehaviour
 
     public void AddResource(int team, int amount)
     {
-        if (team < 0 || team >= teamNum)
+        if (team < 1 || team > teamNum)
         {
             Debug.LogError("Invalid team number: " + team);
             return;
         }
 
-        teamResources[team] += amount;
+        teamResources[team-1] += amount;
     }
 
     public int GetResourceAmount(int team)
     {
-        if (team < 0 || team >= teamNum)
+        if (team < 1 || team > teamNum)
         {
             Debug.LogError("Invalid team number: " + team);
             return -1;
         }
-        return teamResources[team];
+        return teamResources[team-1];
     }
 }

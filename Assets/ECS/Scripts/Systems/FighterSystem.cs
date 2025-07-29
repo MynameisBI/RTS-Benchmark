@@ -47,7 +47,6 @@ public partial struct FighterSystem : ISystem
                         fighterComponent.ValueRW.target = newTarget;
                         fighterComponent.ValueRW.currentState = FighterComponent.FighterState.Moving;
 
-                        unitPathBuffer.Clear();
                         unitComponent.ValueRW.targetPosition = state.EntityManager.GetComponentData<GridPositionComponent>(newTarget).position;
                         unitComponent.ValueRW.hasTriedFindPath = false;
                     }
@@ -75,7 +74,6 @@ public partial struct FighterSystem : ISystem
                             {
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
-                                unitPathBuffer.Clear();
                                 unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else

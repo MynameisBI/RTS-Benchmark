@@ -47,7 +47,6 @@ public partial struct HealerSystem : ISystem
                         healerComponent.ValueRW.target = newTarget;
                         healerComponent.ValueRW.currentState = HealerComponent.HealerState.Moving;
 
-                        unitPathBuffer.Clear();
                         unitComponent.ValueRW.targetPosition = state.EntityManager.GetComponentData<GridPositionComponent>(newTarget).position;
                         unitComponent.ValueRW.hasTriedFindPath = false;
                     }
@@ -75,7 +74,6 @@ public partial struct HealerSystem : ISystem
                             {
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
-                                unitPathBuffer.Clear();
                                 unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else

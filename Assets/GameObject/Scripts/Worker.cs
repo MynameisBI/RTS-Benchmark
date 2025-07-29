@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Entities;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -11,14 +12,14 @@ public class Worker : Unit
 
     private ResourceManager resourceManager;
 
-    private enum WorkerUnitState
+    public enum WorkerUnitState
     {
         Idle,
         Moving,
         Building,
         Extracting,
     }
-    private WorkerUnitState currentState;
+    public WorkerUnitState currentState;
 
     private new void Awake()
     {
@@ -121,6 +122,13 @@ public class Worker : Unit
                 break;
 
             case WorkerUnitState.Building:
+                if (resourceManager.GetResourceAmount(team) < 10)
+                {
+                    targetResource = null;
+                    currentState = WorkerUnitState.Idle;
+                    break;
+                }
+
                 List<Vector2Int> adjacentWalkableTiles = gameManager.GetAdjacentWalkableTiles(gridX, gridY);
 
                 if (adjacentWalkableTiles.Count >= 2)
@@ -129,9 +137,10 @@ public class Worker : Unit
                     if (gameManager.AddBuilding(adjacentWalkableTile.x, adjacentWalkableTile.y, team))
                     {
                         resourceManager.AddResource(team, -10);
-                        targetResource = null;
-                        currentState = WorkerUnitState.Idle;
                     }
+                    targetResource = null;
+                    currentState = WorkerUnitState.Idle;
+
                 } else if (adjacentWalkableTiles.Count == 1)
                 {
                     targetResource = null;

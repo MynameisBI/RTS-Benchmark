@@ -101,7 +101,7 @@ MonoBehaviour:
   gridY: 0
   team: 0
   speed: 0
-  health: 25
+  health: 10
   range: 0
   damage: 0
   attackSpeed: 1

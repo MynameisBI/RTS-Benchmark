@@ -84,7 +84,7 @@ public class Healer : Unit
         }
         if (secondsToAttack < 0)
         {
-            if (currentTarget != null)
+            if (currentTarget != null && Vector2.Distance(new Vector2(gridX, gridY), (Vector2)currentTarget.transform.position) <= range)
             {
                 secondsToAttack = secondsPerAttack;
                 Heal(currentTarget);

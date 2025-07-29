@@ -36,7 +36,6 @@ public partial struct WorkerSystem : ISystem
             switch (workerComponent.ValueRO.currentState)
             {
                 case WorkerUnitState.Idle:
-                    Debug.Log("1");
                     if (teamResourceBuffer[teamComponent.ValueRO.teamId - 1].amount > 10)
                     {
                         workerComponent.ValueRW.targetResourceEntity = Entity.Null;
@@ -46,7 +45,7 @@ public partial struct WorkerSystem : ISystem
                     {
                         Entity target = Entity.Null;
                         float closestDistance = float.MaxValue;
-                        foreach (var (resourceGridPositionComponent, resourceComponent, entity) in
+                        foreach (var (resourceGridPositionComponent, resourceComponent, resourceEntity) in
                                 SystemAPI.Query<RefRO<GridPositionComponent>, RefRW<ResourceComponent>>().WithEntityAccess())
                         {
                             float distance = math.distance(resourceGridPositionComponent.ValueRO.position,
@@ -54,31 +53,29 @@ public partial struct WorkerSystem : ISystem
                             if (distance < closestDistance)
                             {
                                 closestDistance = distance;
-                                target = entity;
+                                target = resourceEntity;
                             }
+                        }
+                        if (target != Entity.Null)
+                        {
+                            NativeList<int2> targetAdjacentTiles = new NativeList<int2>(4, Allocator.Temp);
+                            GeneralUtils.GetAdjacentWalkableTiles(
+                                    SystemAPI.GetComponentRO<GridPositionComponent>(target).ValueRO.position,
+                                    gameManager, SystemAPI.GetSingletonBuffer<OccupationCellBuffer>(), ref targetAdjacentTiles);
 
-                            if (target != Entity.Null)
+                            if (targetAdjacentTiles.Length >= 1)
                             {
-                                NativeList<int2> targetAdjacentTiles = new NativeList<int2>(4, Allocator.Temp);
-                                GeneralUtils.GetAdjacentWalkableTiles(resourceGridPositionComponent.ValueRO.position,
-                                        gameManager, SystemAPI.GetSingletonBuffer<OccupationCellBuffer>(), ref targetAdjacentTiles);
-
-                                if (targetAdjacentTiles.Length >= 1)
-                                {
-                                    workerComponent.ValueRW.targetResourceEntity = target;
-                                    unitPathBuffer.Clear();
-                                    unitComponent.ValueRW.targetPosition = targetAdjacentTiles[rng.NextInt(0, targetAdjacentTiles.Length)];
-                                    unitComponent.ValueRW.hasTriedFindPath = false;
-                                    workerComponent.ValueRW.currentState = WorkerUnitState.Moving;
-                                    break;
-                                }
+                                workerComponent.ValueRW.targetResourceEntity = target;
+                                unitComponent.ValueRW.targetPosition = targetAdjacentTiles[rng.NextInt(0, targetAdjacentTiles.Length)];
+                                unitComponent.ValueRW.hasTriedFindPath = false;
+                                workerComponent.ValueRW.currentState = WorkerUnitState.Moving;
+                                break;
                             }
                         }
                     }
                     break;
 
                 case WorkerUnitState.Moving:
-                    Debug.Log("2");
                     if (unitPathBuffer.Length == 0)
                         if (workerComponent.ValueRO.targetResourceEntity != Entity.Null)
                             workerComponent.ValueRW.currentState = WorkerUnitState.Extracting;
@@ -102,7 +99,6 @@ public partial struct WorkerSystem : ISystem
                             {
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
-                                unitPathBuffer.Clear();
                                 unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else
@@ -122,7 +118,6 @@ public partial struct WorkerSystem : ISystem
                     break;
 
                 case WorkerUnitState.Building:
-                    Debug.Log("3");
                     if (teamResourceBuffer.ElementAt(teamComponent.ValueRO.teamId - 1).amount < 10)
                     {
                         workerComponent.ValueRW.targetResourceEntity = Entity.Null;
@@ -145,30 +140,26 @@ public partial struct WorkerSystem : ISystem
                             Entity building = ecb.Instantiate(gameManager.buildingPrefab);
 
                             ecb.SetComponent(building, LocalTransform.FromPosition(adjacentWalkableTile.x, adjacentWalkableTile.y, 0));
-                            ecb.AddComponent<GridPositionComponent>(building, new GridPositionComponent
+                            ecb.AddComponent(building, new TeamComponent
+                            {
+                                teamId = teamComponent.ValueRO.teamId,
+                            });
+                            ecb.AddComponent(building, new GridPositionComponent
                             {
                                 position = adjacentWalkableTile,
                             });
-                            ecb.AddComponent<HealthComponent>(building, new HealthComponent
+                            ecb.AddComponent(building, new HealthComponent
                             {
                                 health = 25,
                                 maxHealth = 25,
                             });
                             //HealthBarReference.CreateHealthBar(building, 25);
-                            ecb.AddComponent<ObstacleComponent>(building, new ObstacleComponent { });
+                            ecb.AddComponent(building, new ObstacleComponent { });
                             state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
                                     .ElementAt(adjacentWalkableTile.x + adjacentWalkableTile.y * gameManager.width).isOccupied = true;
-
-                            int i = 0;
-                            for (int x = 0; x < gameManager.width; x++)
-                                for (int y = 0; y < gameManager.height; y++)
-                                    i = state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
-                                            .ElementAt(x + y * gameManager.width).isOccupied ? i+1 : i;
-                            Debug.Log($"{i}");
-
-                            workerComponent.ValueRW.targetResourceEntity = Entity.Null;
-                            workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
                         }
+                        workerComponent.ValueRW.targetResourceEntity = Entity.Null;
+                        workerComponent.ValueRW.currentState = WorkerUnitState.Idle;
                     }
                     else if (adjacentWalkableTiles.Length == 1)
                     {

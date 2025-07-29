@@ -49,7 +49,6 @@ public partial struct TrapperSystem : ISystem
                     {
                         trapperComponent.ValueRW.currentState = TrapperComponent.TrapperState.Moving;
 
-                        unitPathBuffer.Clear();
                         unitComponent.ValueRW.targetPosition = (int2)newTarget;
                         unitComponent.ValueRW.hasTriedFindPath = false;
                     }
@@ -83,7 +82,6 @@ public partial struct TrapperSystem : ISystem
                             {
                                 transform.ValueRW.Position =
                                         new float3(gridPositionComponent.ValueRW.position.x, gridPositionComponent.ValueRW.position.y, 0);
-                                unitPathBuffer.Clear();
                                 unitComponent.ValueRW.hasTriedFindPath = false;
                             }
                             else

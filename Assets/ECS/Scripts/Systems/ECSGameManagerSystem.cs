@@ -83,6 +83,7 @@ public partial struct ECSGameManagerSystem : ISystem
         }
 
         ecb.Playback(state.EntityManager);
+        ecb.Dispose();
     }
 
     public Entity AddUnit(ref SystemState state, ref EntityCommandBuffer ecb, int id, int team, int x, int y)
@@ -98,13 +99,13 @@ public partial struct ECSGameManagerSystem : ISystem
         switch (id)
         {
             default:
-                unit = ecb.Instantiate(gameManager.unitPrefab);
+                unit = ecb.Instantiate(gameManager.wandererPrefab);
                 ecb.AddComponent(unit, new TeamComponent { teamId = team });
                 ecb.SetComponent(unit, LocalTransform.FromPosition(x, y, 0));
                 ecb.AddComponent(unit, new GridPositionComponent { position = new int2(x, y) });
                 ecb.AddComponent(unit, new UnitComponent
                 {
-                    speed = 10f,
+                    speed = 5f,
                     attackSpeed = 1f,
                     secondsToAttack = 1f,
                     targetPosition = null,
@@ -112,6 +113,7 @@ public partial struct ECSGameManagerSystem : ISystem
                 });
                 ecb.AddBuffer<UnitPathBuffer>(unit);
                 ecb.AddComponent(unit, new HealthComponent { health = 5, maxHealth = 5 });
+                ecb.AddComponent(unit, new WandererComponent { });
                 break;
 
             case 1: // Light
@@ -121,7 +123,7 @@ public partial struct ECSGameManagerSystem : ISystem
                 ecb.AddComponent(unit, new GridPositionComponent { position = new int2(x, y) });
                 ecb.AddComponent(unit, new UnitComponent
                 {
-                    speed = 5f,
+                    speed = 10f,
                     range = 2,
                     damage = 1,
                     attackSpeed = 1f,
@@ -192,7 +194,32 @@ public partial struct ECSGameManagerSystem : ISystem
                 });
                 break;
 
-            case 4: // Healer
+            case 4: // Trapper
+                unit = ecb.Instantiate(gameManager.trapperPrefab);
+                ecb.AddComponent(unit, new TeamComponent { teamId = team });
+                ecb.SetComponent(unit, LocalTransform.FromPosition(x, y, 0));
+                ecb.AddComponent(unit, new GridPositionComponent { position = new int2(x, y) });
+                ecb.AddComponent(unit, new UnitComponent
+                {
+                    speed = 5f,
+                    range = 1,
+                    damage = 10,
+                    attackSpeed = 1f,
+                    secondsToAttack = 0f,
+                    targetPosition = null,
+                    hasTriedFindPath = true,
+                });
+                ecb.AddBuffer<UnitPathBuffer>(unit);
+                ecb.AddComponent(unit, new HealthComponent { health = 5, maxHealth = 5 });
+                ecb.AddComponent(unit, new TrapperComponent
+                {
+                    currentState = TrapperComponent.TrapperState.Idle,
+                    secondsToFindNewTarget = 0f,
+                    secondsPerFindNewTarget = UnityEngine.Random.Range(0.75f, 1.25f),
+                });
+                break;
+
+            case 5: // Healer
                 unit = ecb.Instantiate(gameManager.healerPrefab);
                 ecb.AddComponent(unit, new TeamComponent { teamId = team });
                 ecb.SetComponent(unit, LocalTransform.FromPosition(x, y, 0));
@@ -213,31 +240,6 @@ public partial struct ECSGameManagerSystem : ISystem
                 {
                     currentState = HealerComponent.HealerState.Idle,
                     target = Entity.Null,
-                    secondsToFindNewTarget = 0f,
-                    secondsPerFindNewTarget = UnityEngine.Random.Range(0.75f, 1.25f),
-                });
-                break;
-
-            case 5: // Trapper
-                unit = ecb.Instantiate(gameManager.trapperPrefab);
-                ecb.AddComponent(unit, new TeamComponent { teamId = team });
-                ecb.SetComponent(unit, LocalTransform.FromPosition(x, y, 0));
-                ecb.AddComponent(unit, new GridPositionComponent { position = new int2(x, y) });
-                ecb.AddComponent(unit, new UnitComponent
-                {
-                    speed = 5f,
-                    range = 1,
-                    damage = 1,
-                    attackSpeed = 1f,
-                    secondsToAttack = 0f,
-                    targetPosition = null,
-                    hasTriedFindPath = true,
-                });
-                ecb.AddBuffer<UnitPathBuffer>(unit);
-                ecb.AddComponent(unit, new HealthComponent { health = 5, maxHealth = 5 });
-                ecb.AddComponent(unit, new TrapperComponent
-                {
-                    currentState = TrapperComponent.TrapperState.Idle,
                     secondsToFindNewTarget = 0f,
                     secondsPerFindNewTarget = UnityEngine.Random.Range(0.75f, 1.25f),
                 });
@@ -295,15 +297,15 @@ public partial struct ECSGameManagerSystem : ISystem
         Entity resource = ecb.Instantiate(gameManager.resourcePrefab);
 
         ecb.SetComponent(resource, LocalTransform.FromPosition(x, y, 0));
-        ecb.AddComponent<GridPositionComponent>(resource, new GridPositionComponent
+        ecb.AddComponent(resource, new GridPositionComponent
         {
             position = new int2(x, y),
         });
-        ecb.AddComponent<ResourceComponent>(resource, new ResourceComponent
+        ecb.AddComponent(resource, new ResourceComponent
         {
             amount = 10,
         });
-        ecb.AddComponent<ObstacleComponent>(resource, new ObstacleComponent { });
+        ecb.AddComponent(resource, new ObstacleComponent { });
 
         state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
                 .ElementAt(x + y * gameManager.width).isOccupied = true;
@@ -317,20 +319,20 @@ public partial struct ECSGameManagerSystem : ISystem
         Entity building = ecb.Instantiate(gameManager.buildingPrefab);
 
         ecb.SetComponent(building, LocalTransform.FromPosition(x, y, 0));
-        ecb.AddComponent<TeamComponent>(building, new TeamComponent
+        ecb.AddComponent(building, new TeamComponent
         {
             teamId = team,
         });
-        ecb.AddComponent<GridPositionComponent>(building, new GridPositionComponent
+        ecb.AddComponent(building, new GridPositionComponent
         {
             position = new int2(x, y),
         });
-        ecb.AddComponent<HealthComponent>(building, new HealthComponent
+        ecb.AddComponent(building, new HealthComponent
         {
             health = 25,
             maxHealth = 25,
         });
-        ecb.AddComponent<ObstacleComponent>(building, new ObstacleComponent { });
+        ecb.AddComponent(building, new ObstacleComponent { });
 
         state.EntityManager.GetBuffer<OccupationCellBuffer>(SystemAPI.GetSingletonEntity<ECSGameManager>())
                 .ElementAt(x + y * gameManager.width).isOccupied = true;
