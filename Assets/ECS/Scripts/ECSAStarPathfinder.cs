@@ -17,7 +17,6 @@ public struct Node
     public bool walkable;
 }
 
-[BurstCompile]
 public struct ECSAStarPathfinder
 {
     public int2 start;
@@ -28,7 +27,6 @@ public struct ECSAStarPathfinder
 
     public DynamicBuffer<UnitPathBuffer> pathBuffer; // Buffer to store the path
 
-    [BurstCompile]
     public bool Execute()
     {
         NativeList<int2> openList = new NativeList<int2>(Allocator.Temp);

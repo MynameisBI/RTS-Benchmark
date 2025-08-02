@@ -7,7 +7,6 @@ using UnityEngine;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 using System.Collections.Generic;
 
-[BurstCompile]
 public partial struct TrapperSystem : ISystem
 {
     Unity.Mathematics.Random rng;
@@ -24,7 +23,6 @@ public partial struct TrapperSystem : ISystem
 
     public void OnDestroy(ref SystemState state) { }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         ecb = new EntityCommandBuffer(Allocator.TempJob);

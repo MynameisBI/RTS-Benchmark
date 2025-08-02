@@ -1,13 +1,10 @@
 using Unity.Entities;
 using Unity.Transforms;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using static GeneralUtils;
 using System.Collections.Generic;
-using UnityEngine;
 
-[BurstCompile]
 public partial struct UnitSystem : ISystem
 {
     Unity.Mathematics.Random rng;

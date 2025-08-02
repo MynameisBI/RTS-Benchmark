@@ -4,10 +4,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
-using System.Collections.Generic;
 
-[BurstCompile]
 public partial struct HealerSystem : ISystem
 {
     Unity.Mathematics.Random rng;
@@ -21,7 +18,6 @@ public partial struct HealerSystem : ISystem
 
     public void OnDestroy(ref SystemState state) { }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         ecb = new EntityCommandBuffer(Allocator.TempJob);
@@ -82,8 +78,8 @@ public partial struct HealerSystem : ISystem
                                 unitPathBuffer.RemoveAt(0);
                             }
 
-                            HealthComponent targetHealthComponent = state.EntityManager.GetComponentData<HealthComponent>(healerComponent.ValueRO.target);
-                            if (!state.EntityManager.Exists(healerComponent.ValueRO.target) || targetHealthComponent.health >= targetHealthComponent.maxHealth)
+                            if (!state.EntityManager.HasComponent<HealthComponent>(healerComponent.ValueRO.target) ||
+                                    state.EntityManager.GetComponentData<HealthComponent>(healerComponent.ValueRO.target).health >= state.EntityManager.GetComponentData<HealthComponent>(healerComponent.ValueRO.target).maxHealth)
                             {
                                 healerComponent.ValueRW.target = Entity.Null;
                                 unitComponent.ValueRW.targetPosition = null;
@@ -99,23 +95,6 @@ public partial struct HealerSystem : ISystem
                                     healerComponent.ValueRW.currentState = HealerComponent.HealerState.Healing;
                                 }
                             }
-                            
-                            // Check for traps
-                            //foreach (var (trapGridObject, trap, entity) in SystemAPI.Query<RefRO<GridEntity>, RefRW<ECSTrap>>().WithEntityAccess())
-                            //{
-                            //    if (gridPositionComponent.ValueRW.position == new int2(trapGridObject.ValueRO.x, trapGridObject.ValueRO.y))
-                            //    {
-                            //        if (trap.ValueRW.counter <= 0)
-                            //            continue;
-
-                            //        if (--trap.ValueRW.counter <= 0)
-                            //        {
-                            //            ecb.DestroyEntity(entity);
-                            //        }
-                            //        break;
-                            //    }
-                            //}
-
                         }
                     }
 
@@ -127,14 +106,20 @@ public partial struct HealerSystem : ISystem
 
             if (unitComponent.ValueRW.secondsToAttack < 0)
             {
+                
                 if (healerComponent.ValueRW.target != Entity.Null)
                 {
-                    unitComponent.ValueRW.secondsToAttack = 1 / unitComponent.ValueRW.attackSpeed;
+                    float2 targetPos = new float2(state.EntityManager.GetComponentData<LocalTransform>(healerComponent.ValueRO.target).Position.x,
+                                        state.EntityManager.GetComponentData<LocalTransform>(healerComponent.ValueRO.target).Position.y);
+                    if (math.distance(gridPositionComponent.ValueRW.position, targetPos) <= unitComponent.ValueRO.range)
+                    {
+                        unitComponent.ValueRW.secondsToAttack = 1 / unitComponent.ValueRW.attackSpeed;
 
-                    Entity target = healerComponent.ValueRW.target;
-                    RefRW<HealthComponent> targetHealthComponent = SystemAPI.GetComponentRW<HealthComponent>(target);
-                    targetHealthComponent.ValueRW.health = math.max(targetHealthComponent.ValueRW.health + unitComponent.ValueRW.damage,
-                            targetHealthComponent.ValueRO.maxHealth);
+                        Entity target = healerComponent.ValueRW.target;
+                        RefRW<HealthComponent> targetHealthComponent = SystemAPI.GetComponentRW<HealthComponent>(target);
+                        targetHealthComponent.ValueRW.health = math.max(targetHealthComponent.ValueRW.health + unitComponent.ValueRW.damage,
+                                targetHealthComponent.ValueRO.maxHealth);
+                    }
                 }
             }
         }

@@ -4,10 +4,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Unit : GridObject
+public class Unit : TeamObject
 {
-    protected GameManager gameManager;
-
     public float speed = 5f;
     protected List<Vector2Int> currentPath;
 
@@ -24,9 +22,9 @@ public class Unit : GridObject
 
     private LineRenderer pathRenderer;
 
-    protected void Awake()
+    protected new void Awake()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        base.Awake();
         maxHealth = health;
     }
 

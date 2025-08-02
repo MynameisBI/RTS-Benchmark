@@ -13,6 +13,8 @@ public partial struct ECSGameManagerSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         hasInitialized = false;
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = -1;
     }
 
     public void OnDestroy(ref SystemState state) { }

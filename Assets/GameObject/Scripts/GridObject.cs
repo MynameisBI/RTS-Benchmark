@@ -7,6 +7,4 @@ public class GridObject : MonoBehaviour
     [Header("Grid Object Properties")]
     public int gridX;
     public int gridY;
-    public int team;
-
 }

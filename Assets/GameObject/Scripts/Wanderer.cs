@@ -52,7 +52,7 @@ public class Wanderer : Unit
             }
         }
 
-        while (currentPath.Count == 0 && currentTarget == null)
+        if (currentPath.Count == 0 && currentTarget == null)
             Move(Random.Range(0, gameManager.width), Random.Range(0, gameManager.height));
     }
 }

@@ -6,8 +6,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using static WorkerComponent;
 
-
-[BurstCompile]
 public partial struct WorkerSystem : ISystem
 {
     Unity.Mathematics.Random rng;
@@ -21,7 +19,6 @@ public partial struct WorkerSystem : ISystem
 
     public void OnDestroy(ref SystemState state) { }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         ecb = new EntityCommandBuffer(Allocator.TempJob);

@@ -462,10 +462,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 50
   height: 50
-  team1UnitCount: 1
-  team2UnitCount: 20
-  selectedMapName: PerformanceTest
-  selectedMapFile: D:/Projects/Unity/RTS benchmark/Assets\Maps\PerformanceTest.json
+  selectedMapName: PerformanceTest500
+  selectedMapFile: D:/Projects/Unity/RTS benchmark/Assets\Maps\PerformanceTest500.json
   lightUnitPrefab: {fileID: 2365146204692483543, guid: 8b59c29cb5d407e44b40103c27ff2877, type: 3}
   heavyUnitPrefab: {fileID: 2365146204692483543, guid: bd5b5996bad7c2f4a93760b1c7bb6c87, type: 3}
   rangeUnitPrefab: {fileID: 2365146204692483543, guid: ad3faf9ad56fa3c489f3a6c6b2ffe1ca, type: 3}
@@ -787,6 +785,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1415923262}
   m_CullTransparentMesh: 1
+--- !u!1 &1438182736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1438182738}
+  - component: {fileID: 1438182737}
+  m_Layer: 0
+  m_Name: PerformanceTracker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1438182737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1438182736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97cc008d3d44ef947b4aee06bc204a28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  testDuration: 300
+--- !u!4 &1438182738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1438182736}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 11.701985, y: 34.323013, z: -0.07855997}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1830292067
 GameObject:
   m_ObjectHideFlags: 0
@@ -1081,3 +1124,4 @@ SceneRoots:
   - {fileID: 363946814}
   - {fileID: 1061443244}
   - {fileID: 1275175570}
+  - {fileID: 1438182738}

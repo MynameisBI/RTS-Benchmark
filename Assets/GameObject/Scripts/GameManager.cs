@@ -7,9 +7,6 @@ public class GameManager : MonoBehaviour
     public int width;
     public int height;
 
-    public int team1UnitCount;
-    public int team2UnitCount;
-
     public string selectedMapName;
     [HideInInspector]
     public string selectedMapFile;
@@ -35,6 +32,12 @@ public class GameManager : MonoBehaviour
     private bool initialized = false;
 
     private ResourceManager resourceManager;
+
+    private void Awake()
+    {
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = -1;
+    }
 
     private void Start()
     {
@@ -183,7 +186,7 @@ public class GameManager : MonoBehaviour
                 return false;
 
             GameObject building = Instantiate(buildingPrefab, new Vector3(x, y, 0), Quaternion.identity);
-            building.GetComponent<GridObject>().team = team;
+            building.GetComponent<TeamObject>().team = team;
 
             obstacles[x, y] = building.GetComponent<GridObject>();
             obstacles[x, y].gridX = x;

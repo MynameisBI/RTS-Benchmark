@@ -7,7 +7,6 @@ using UnityEngine;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 using System.Collections.Generic;
 
-[BurstCompile]
 public partial struct WandererSystem : ISystem
 {
     Unity.Mathematics.Random rng;
@@ -21,7 +20,6 @@ public partial struct WandererSystem : ISystem
 
     public void OnDestroy(ref SystemState state) { }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         ecb = new EntityCommandBuffer(Allocator.TempJob);

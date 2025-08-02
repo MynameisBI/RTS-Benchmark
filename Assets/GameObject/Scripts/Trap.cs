@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Trap : GridObject
+public class Trap : TeamObject
 {
     public int counter = 1;
     [HideInInspector]
