@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Building : TeamObject
 {
-    private void OnDestroy()
+    private new void OnDestroy()
     {
+        base.OnDestroy();
+
         gameManager.RemoveBuilding(this);
     }
 }

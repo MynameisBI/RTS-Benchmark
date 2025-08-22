@@ -95,7 +95,7 @@ public class Fighter : Unit
                 { 
                     secondsToAttack = secondsPerAttack;
                     // Side effect moment
-                    Attack(currentTarget);
+                    Attack(currentTarget, damage);
 
                     if (Vector2.Distance(new Vector2(gridX, gridY), (Vector2)currentTarget.transform.position) > range || currentTarget == null || currentTarget.IsDestroyed())
                     {
@@ -114,11 +114,11 @@ public class Fighter : Unit
 
         if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy || Vector2.Distance(transform.position, currentTarget.transform.position) > range)
         {
-            Unit[] units = FindObjectsOfType<Unit>();
+            TeamObject[] units = FindObjectsOfType<TeamObject>();
 
-            Unit target = null;
+            TeamObject target = null;
             float closestDistance = float.MaxValue;
-            foreach (Unit unit in units)
+            foreach (TeamObject unit in units)
             {
                 if (unit.team != team)
                 {

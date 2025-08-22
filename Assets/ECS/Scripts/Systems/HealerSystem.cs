@@ -117,7 +117,7 @@ public partial struct HealerSystem : ISystem
 
                         Entity target = healerComponent.ValueRW.target;
                         RefRW<HealthComponent> targetHealthComponent = SystemAPI.GetComponentRW<HealthComponent>(target);
-                        targetHealthComponent.ValueRW.health = math.max(targetHealthComponent.ValueRW.health + unitComponent.ValueRW.damage,
+                        targetHealthComponent.ValueRW.health = math.min(targetHealthComponent.ValueRW.health + unitComponent.ValueRW.damage,
                                 targetHealthComponent.ValueRO.maxHealth);
                     }
                 }

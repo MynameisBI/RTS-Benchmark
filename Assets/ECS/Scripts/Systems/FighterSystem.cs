@@ -38,14 +38,19 @@ public partial struct FighterSystem : ISystem
 
                 if (fighterComponent.ValueRO.currentState != FighterComponent.FighterState.Attacking)
                 {
-                    Entity newTarget = FindNewTarget(ref state, fighterComponent, unitComponent, gridPositionComponent, teamComponent);
+                    Entity newTarget;
+                    int2 targetPosition;
+                    bool targetFound = FindNewTarget(ref state, fighterComponent, unitComponent, gridPositionComponent, teamComponent,
+                            out newTarget, out targetPosition);
 
-                    if (newTarget != Entity.Null)
+                    if (targetFound && newTarget != Entity.Null)
                     {
                         fighterComponent.ValueRW.target = newTarget;
                         fighterComponent.ValueRW.currentState = FighterComponent.FighterState.Moving;
 
-                        unitComponent.ValueRW.targetPosition = state.EntityManager.GetComponentData<GridPositionComponent>(newTarget).position;
+                        GridPositionComponent targetGridPositionComponent = state.EntityManager.GetComponentData<GridPositionComponent>(newTarget);
+                        unitComponent.ValueRW.targetPosition = targetPosition;
+
                         unitComponent.ValueRW.hasTriedFindPath = false;
                     }
                 }
@@ -115,7 +120,6 @@ public partial struct FighterSystem : ISystem
                     {
                         unitComponent.ValueRW.secondsToAttack = 1 / unitComponent.ValueRW.attackSpeed;
 
-                        // Side effect moment
                         RefRW<HealthComponent> hc = SystemAPI.GetComponentRW<HealthComponent>(fighterComponent.ValueRW.target);
                         hc.ValueRW.health -= unitComponent.ValueRO.damage;
                         if (hc.ValueRW.health <= 0)
@@ -140,21 +144,27 @@ public partial struct FighterSystem : ISystem
         ecb.Dispose();
     }
 
-    private Entity FindNewTarget(ref SystemState state, RefRW<FighterComponent> fighterComponent,
-        RefRW<UnitComponent> unitComponent, RefRW<GridPositionComponent> gridPositionComponent, RefRO<TeamComponent> teamComponent)
+    private bool FindNewTarget(ref SystemState state, RefRW<FighterComponent> fighterComponent,
+        RefRW<UnitComponent> unitComponent, RefRW<GridPositionComponent> gridPositionComponent, RefRO<TeamComponent> teamComponent,
+        out Entity newTarget, out int2 targetPosition)
     {
         if (fighterComponent.ValueRW.currentState == FighterComponent.FighterState.Attacking)
-            return Entity.Null;
+        {
+            newTarget = Entity.Null;
+            targetPosition = default;
+            return false;
+        }
 
         Entity currentTarget = fighterComponent.ValueRW.target;
+        GridPositionComponent? targetGridPositionComponent = null;
         if (currentTarget == Entity.Null || !state.EntityManager.Exists(currentTarget) ||
                 math.distance(gridPositionComponent.ValueRW.position,
                         state.EntityManager.GetComponentData<GridPositionComponent>(currentTarget).position) > unitComponent.ValueRW.range)
         {
             float minDistance = float.MaxValue;
             Entity closestEnemy = Entity.Null;
-            foreach (var (otherGridPosition, otherUnit, otherHealth, otherTeam, otherEntity) in
-                    SystemAPI.Query<RefRO<GridPositionComponent>, RefRW<UnitComponent>, RefRO<HealthComponent>, RefRO<TeamComponent>>().WithEntityAccess())
+            foreach (var (otherGridPosition, otherHealth, otherTeam, otherEntity) in
+                    SystemAPI.Query<RefRO<GridPositionComponent>, RefRO<HealthComponent>, RefRO<TeamComponent>>().WithEntityAccess())
             {
                 if (otherTeam.ValueRO.teamId != teamComponent.ValueRO.teamId && otherHealth.ValueRO.health > 0)
                 {
@@ -167,7 +177,30 @@ public partial struct FighterSystem : ISystem
                 }
             }
             currentTarget = closestEnemy;
+            if (currentTarget != Entity.Null && state.EntityManager.Exists(currentTarget))
+                targetGridPositionComponent = state.EntityManager.GetComponentData<GridPositionComponent>(currentTarget);
         }
-        return currentTarget;
+        
+        if (currentTarget != Entity.Null && state.EntityManager.Exists(currentTarget))
+        {
+            newTarget = currentTarget;
+            if (state.EntityManager.HasComponent<ObstacleComponent>(newTarget))
+            {
+                NativeList<int2> adjacentWalkableTiles = new NativeList<int2>(4, Allocator.Temp);
+                GeneralUtils.GetAdjacentWalkableTiles(((GridPositionComponent)targetGridPositionComponent).position,
+                    SystemAPI.GetSingleton<ECSGameManager>(), SystemAPI.GetSingletonBuffer<OccupationCellBuffer>(), ref adjacentWalkableTiles);
+                targetPosition = new int2(adjacentWalkableTiles[rng.NextInt(0, adjacentWalkableTiles.Length)]);
+                adjacentWalkableTiles.Dispose();
+            }
+            else
+                targetPosition = ((GridPositionComponent)targetGridPositionComponent).position;
+            return true;
+        }
+        else
+        {
+            newTarget = Entity.Null;
+            targetPosition = default;
+            return false;
+        }
     }
 }

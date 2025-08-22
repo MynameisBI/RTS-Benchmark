@@ -27,6 +27,7 @@ public partial class HealthBarUISystem : SystemBase
                 noHealthBarEntities.Add(entity);
             } else
             {
+                healthBarReference.slider.enabled = false;
                 healthBarReference.slider.maxValue = healthComponent.ValueRO.maxHealth;
                 healthBarReference.slider.value = healthComponent.ValueRO.health;
                 healthBarReference.transform.position = transform.ValueRO.Position;

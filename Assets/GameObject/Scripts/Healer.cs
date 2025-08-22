@@ -87,12 +87,12 @@ public class Healer : Unit
             if (currentTarget != null && Vector2.Distance(new Vector2(gridX, gridY), (Vector2)currentTarget.transform.position) <= range)
             {
                 secondsToAttack = secondsPerAttack;
-                Heal(currentTarget);
+                Heal((TeamObject)currentTarget);
             }
         }
     }
 
-    protected void Heal(Unit target)
+    protected void Heal(TeamObject target)
     {
         target.ReceiveHeal(damage);
     }
