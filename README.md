@@ -23,4 +23,4 @@ The repository also includes my full thesis report. The report provides detailed
    - `Assets/Scenes/OOP.unity` for the MonoBehaviour-based version, or
    - `Assets/Scenes/ECS.unity` for the DOTS/ECS-based version.
 
-For the full evaluation, see the [Report](10421131_Le Huynh Dong Quan_Bachelor Thesis Report.pdf).
+For the full evaluation, see the [Report](https://github.com/MynameisBI/RTS-Benchmark/blob/main/10421131_Le%20Huynh%20Dong%20Quan_Bachelor%20Thesis%20Report.pdf).
